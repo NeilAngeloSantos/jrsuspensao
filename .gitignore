@@ -7,3 +7,5 @@ data/*.sqlite
 data/*.sqlite-*
 *.log
 steps.bat
+Serviços.xlsx
+servicos-inserts.sql
