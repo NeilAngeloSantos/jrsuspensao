@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json({ clients: listClients() });
+  return NextResponse.json({ clients: await listClients() });
 }
 
 export async function POST(request) {
@@ -17,7 +17,7 @@ export async function POST(request) {
   }
 
   return NextResponse.json({
-    clients: createClient({
+    clients: await createClient({
       name,
       phone: String(body.phone || "").trim(),
       email: String(body.email || "").trim(),

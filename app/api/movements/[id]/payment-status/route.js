@@ -16,7 +16,7 @@ export async function PATCH(request, { params }) {
     );
   }
 
-  const result = updateMovementPaymentStatus(Number(id), paymentStatus);
+  const result = await updateMovementPaymentStatus(Number(id), paymentStatus);
 
   if (!result) {
     return NextResponse.json(

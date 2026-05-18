@@ -1,4 +1,10 @@
-import { getDashboard, getPendingSummary } from "@/lib/db";
+import Link from "next/link";
+import { DashboardYearSelector } from "@/components/dashboard-year-selector";
+import {
+  getAvailableDashboardYears,
+  getDashboard,
+  getPendingSummary,
+} from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +24,15 @@ const monthNames = [
   "Dez",
 ];
 
-export default function DashboardPage() {
-  const year = new Date().getFullYear();
-  const dashboard = getDashboard(year);
-  const pending = getPendingSummary();
+export default async function DashboardPage({ searchParams }) {
+  const params = await searchParams;
+  const availableYears = await getAvailableDashboardYears();
+  const currentYear = new Date().getFullYear();
+  const yearOptions = availableYears.length ? availableYears : [currentYear];
+  const fallbackYear = yearOptions[0];
+  const year = normalizeYear(params?.year, yearOptions, fallbackYear);
+  const dashboard = await getDashboard(year);
+  const pending = await getPendingSummary();
   const maxIncoming = Math.max(
     1,
     ...dashboard.months.map((month) => month.incomingCents)
@@ -38,10 +49,9 @@ export default function DashboardPage() {
           <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-950 md:text-5xl">
             Dashboard financeiro
           </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-600">
-            Progresso mensal e acumulado de {year} com base nas movimentacoes
-            registradas.
-          </p>
+        </div>
+        <div className="self-start md:self-end md:text-right">
+          <DashboardYearSelector years={yearOptions} selectedYear={year} />
         </div>
       </header>
 
@@ -86,9 +96,13 @@ export default function DashboardPage() {
             {year}
           </span>
         </div>
-        <div className="mt-6 grid gap-4">
+        <div className="mt-6 grid gap-3">
           {dashboard.months.map((month, index) => (
-            <div className="grid grid-cols-[44px_1fr_112px] items-center gap-3" key={month.month}>
+            <Link
+              className="grid grid-cols-[44px_1fr_112px] items-center gap-3 rounded-md px-2 py-2 transition hover:bg-zinc-50"
+              href={`/dashboard-mensal?year=${year}&month=${month.month}`}
+              key={month.month}
+            >
               <strong className="text-sm text-zinc-500">{monthNames[index]}</strong>
               <div className="h-2 overflow-hidden rounded-full bg-zinc-100" aria-hidden="true">
                 <div
@@ -101,7 +115,7 @@ export default function DashboardPage() {
               <span className="text-right text-sm font-semibold text-zinc-800">
                 {formatCurrency(month.balanceCents)}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -129,4 +143,13 @@ function Metric({ label, value, detail, tone = "zinc" }) {
       <p className="mt-2 text-sm text-zinc-500">{detail || "Atualizado pelo caixa diario"}</p>
     </article>
   );
+}
+
+function normalizeYear(value, availableYears, fallbackYear) {
+  const parsed = Number(value);
+  if (availableYears.includes(parsed)) {
+    return parsed;
+  }
+
+  return fallbackYear;
 }

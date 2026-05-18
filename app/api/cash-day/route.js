@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date") || isoDate();
-  return NextResponse.json(getCashDay(date));
+  return NextResponse.json(await getCashDay(date));
 }
 
 export async function PATCH(request) {
@@ -23,5 +23,5 @@ export async function PATCH(request) {
     );
   }
 
-  return NextResponse.json(setOpeningAmount(date, openingCents));
+  return NextResponse.json(await setOpeningAmount(date, openingCents));
 }

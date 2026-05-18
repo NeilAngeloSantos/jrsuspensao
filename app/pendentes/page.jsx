@@ -4,8 +4,8 @@ import { formatCurrency } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default function PendingPaymentsPage() {
-  const pending = listPendingMovements();
+export default async function PendingPaymentsPage() {
+  const pending = await listPendingMovements();
   const totalCents = pending.reduce(
     (sum, movement) => sum + Number(movement.amount_cents || 0),
     0

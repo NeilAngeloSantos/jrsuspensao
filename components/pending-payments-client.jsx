@@ -3,6 +3,12 @@
 import { useMemo, useState } from "react";
 import { formatCurrency, modeLabels, paymentLabels } from "@/lib/format";
 
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
 export function PendingPaymentsClient({ initialPending }) {
   const [pending, setPending] = useState(initialPending);
   const [savingId, setSavingId] = useState(null);
@@ -134,17 +140,16 @@ function Metric({ label, value }) {
 }
 
 function formatDate(value) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
-    .format(new Date(`${value}Z`))
-    .replace(".", "");
+  const date = parseTimestamp(value);
+  return date ? dateFormatter.format(date).replace(".", "") : "-";
 }
 
 function waitingTimeLabel(value) {
-  const startedAt = new Date(`${value}Z`).getTime();
+  const startedAt = parseTimestamp(value)?.getTime();
+  if (!startedAt) {
+    return "-";
+  }
+
   const diffMs = Math.max(0, Date.now() - startedAt);
   const days = Math.floor(diffMs / 86400000);
   const hours = Math.floor((diffMs % 86400000) / 3600000);
@@ -158,6 +163,24 @@ function waitingTimeLabel(value) {
   }
 
   return "menos de 1h";
+}
+
+function parseTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const timestamp = String(value).trim();
+  const needsUtcSuffix = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?$/.test(
+    timestamp
+  );
+  const parsed = new Date(needsUtcSuffix ? `${timestamp}Z` : timestamp);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function typeBadge(type) {

@@ -19,6 +19,11 @@ const emptyMovement = {
   paymentStatus: "paid",
 };
 
+const timeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 export function CashDayClient({ clients, initialData, date }) {
   const [data, setData] = useState(initialData);
   const [opening, setOpening] = useState(formatCurrency(initialData.day.opening_cents));
@@ -686,10 +691,7 @@ export function CashDayClient({ clients, initialData, date }) {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-zinc-500">
-                    {new Intl.DateTimeFormat("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(`${item.occurred_at}Z`))}
+                    {formatTime(item.occurred_at)}
                   </td>
                   <td className="max-w-[360px] px-5 py-4 font-medium text-zinc-950">
                     <span className="block truncate">{item.description}</span>
@@ -814,6 +816,29 @@ function SummaryLine({ blue = false, compact = false, dark = false, label, value
       </strong>
     </div>
   );
+}
+
+function parseTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const timestamp = String(value).trim();
+  const needsUtcSuffix = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?$/.test(
+    timestamp
+  );
+  const parsed = new Date(needsUtcSuffix ? `${timestamp}Z` : timestamp);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatTime(value) {
+  const date = parseTimestamp(value);
+  return date ? timeFormatter.format(date) : "-";
 }
 
 function badgeClass(type) {

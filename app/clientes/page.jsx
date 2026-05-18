@@ -3,8 +3,8 @@ import { listClients } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default function ClientsPage() {
-  const clients = listClients();
+export default async function ClientsPage() {
+  const clients = await listClients();
 
   return (
     <div className="space-y-8">

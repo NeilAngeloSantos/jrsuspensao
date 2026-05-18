@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function DELETE(_request, { params }) {
   const { id } = await params;
-  return NextResponse.json({ clients: deleteClient(Number(id)) });
+  return NextResponse.json({ clients: await deleteClient(Number(id)) });
 }
 
 export async function PATCH(request, { params }) {
@@ -18,7 +18,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Nome do cliente e obrigatorio." }, { status: 400 });
   }
 
-  const clients = updateClient({
+  const clients = await updateClient({
     id: Number(id),
     name,
     phone: String(body.phone || "").trim(),

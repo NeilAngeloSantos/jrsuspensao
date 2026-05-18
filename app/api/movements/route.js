@@ -41,7 +41,7 @@ export async function POST(request) {
   }
 
   return NextResponse.json(
-    createMovement({
+    await createMovement({
       date,
       mode,
       description,

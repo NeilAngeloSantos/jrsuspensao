@@ -24,8 +24,8 @@ export default async function CashDayPage({ searchParams }) {
   const params = await searchParams;
   const today = isoDate();
   const selectedDate = normalizeDate(params?.date, today);
-  const data = getCashDay(selectedDate);
-  const clients = listClients();
+  const data = await getCashDay(selectedDate);
+  const clients = await listClients();
   const date = new Date(`${selectedDate}T12:00:00`);
   const displayDate = `${String(date.getDate()).padStart(2, "0")} ${
     monthLabels[date.getMonth()]

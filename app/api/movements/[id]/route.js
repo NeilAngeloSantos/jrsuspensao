@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function DELETE(_request, { params }) {
   const { id } = await params;
-  const result = deleteMovement(Number(id));
+  const result = await deleteMovement(Number(id));
 
   if (!result) {
     return NextResponse.json(
@@ -50,7 +50,7 @@ export async function PATCH(request, { params }) {
     );
   }
 
-  const result = updateMovement({
+  const result = await updateMovement({
     id: Number(id),
     mode,
     description,
