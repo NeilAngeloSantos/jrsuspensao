@@ -17,7 +17,7 @@ export function CashDateSelector({ date, displayDate, maxDate }) {
 
   return (
     <>
-      <h1 className="mt-2 text-5xl font-semibold tracking-tight text-emerald-950 md:text-7xl">
+      <h1 className="mt-2 text-5xl font-semibold tracking-tight text-emerald-950 transition hover:text-emerald-700 md:text-7xl">
         <button
           className="[all:unset] cursor-pointer"
           onClick={() => {
