@@ -12,15 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeilAngeloSantos/cash-flow.git"
+    "url": "git+https://github.com/NeilAngeloSantos/jrsuspensao.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/NeilAngeloSantos/cash-flow/issues"
+    "url": "https://github.com/NeilAngeloSantos/jrsuspensao/issues"
   },
-  "homepage": "https://github.com/NeilAngeloSantos/cash-flow#readme",
+  "homepage": "https://github.com/NeilAngeloSantos/jrsuspensao#readme",
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "lucide-react": "^1.8.0",
