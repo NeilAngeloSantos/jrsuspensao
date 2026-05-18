@@ -12,15 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neilsantos/cash-flow.git"
+    "url": "git+https://github.com/NeilAngeloSantos/cash-flow.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/neilsantos/cash-flow/issues"
+    "url": "https://github.com/NeilAngeloSantos/cash-flow/issues"
   },
-  "homepage": "https://github.com/neilsantos/cash-flow#readme",
+  "homepage": "https://github.com/NeilAngeloSantos/cash-flow#readme",
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "lucide-react": "^1.8.0",

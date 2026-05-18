@@ -12,7 +12,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: neilsantos/cash-flow
+  IMAGE_NAME: neilangelosantos/cash-flow
 
 jobs:
   build-and-push:
