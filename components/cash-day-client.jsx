@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Search, UserCheck, UserPlus, X } from "lucide-react";
+import { ArrowLeft, Pencil, Search, UserCheck, UserPlus, X } from "lucide-react";
 import {
   formatCurrency,
   formatInputCurrency,
@@ -12,6 +12,8 @@ import {
 import { HiddenValue } from "@/components/value-visibility";
 
 const emptyClient = { name: "", phone: "", email: "", vehiclePlate: "" };
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const vehiclePlatePattern = /^[A-Z]{3}-?\d[A-Z0-9]\d{2}$/i;
 
 const emptyMovement = {
   mode: "in",
@@ -80,6 +82,36 @@ export function CashDayClient({ clients: initialClients, initialData, date }) {
 
     setClientModalOpen(false);
     setClientSearch("");
+  }
+
+  function openNewClientForm() {
+    if (clientFormOpen) {
+      setClientFormOpen(false);
+      setClientMessage("");
+      return;
+    }
+
+    const search = clientSearch.trim();
+    setNewClient((current) => {
+      if (!search) {
+        return current;
+      }
+
+      if (emailPattern.test(search)) {
+        return { ...current, email: current.email || search };
+      }
+
+      if (vehiclePlatePattern.test(search)) {
+        return {
+          ...current,
+          vehiclePlate: current.vehiclePlate || search.replace(/[\s-]/g, "").toUpperCase(),
+        };
+      }
+
+      return { ...current, name: current.name || search };
+    });
+    setClientMessage("");
+    setClientFormOpen(true);
   }
 
   async function saveOpening(event) {
@@ -271,16 +303,18 @@ export function CashDayClient({ clients: initialClients, initialData, date }) {
               </button>
             </div>
 
-            <div className="mt-5 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-100">
-              <Search className="text-zinc-400" size={18} />
-              <input
-                autoFocus
-                className="h-12 min-w-0 flex-1 bg-transparent text-zinc-950 outline-none placeholder:text-zinc-400"
-                onChange={(event) => setClientSearch(event.target.value)}
-                placeholder="Pesquisar por nome, telefone, e-mail ou placa"
-                value={clientSearch}
-              />
-            </div>
+            {!clientFormOpen ? (
+              <div className="mt-5 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-100">
+                <Search className="text-zinc-400" size={18} />
+                <input
+                  autoFocus
+                  className="h-12 min-w-0 flex-1 bg-transparent text-zinc-950 outline-none placeholder:text-zinc-400"
+                  onChange={(event) => setClientSearch(event.target.value)}
+                  placeholder="Pesquisar por nome, telefone, e-mail ou placa"
+                  value={clientSearch}
+                />
+              </div>
+            ) : null}
 
             <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50/60 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -292,14 +326,11 @@ export function CashDayClient({ clients: initialClients, initialData, date }) {
                 </div>
                 <button
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
-                  onClick={() => {
-                    setClientFormOpen((current) => !current);
-                    setClientMessage("");
-                  }}
+                  onClick={openNewClientForm}
                   type="button"
                 >
-                  <UserPlus size={16} />
-                  <span>{clientFormOpen ? "Ocultar" : "Novo cliente"}</span>
+                  {clientFormOpen ? <ArrowLeft size={16} /> : <UserPlus size={16} />}
+                  <span>{clientFormOpen ? "Voltar" : "Novo cliente"}</span>
                 </button>
               </div>
 
@@ -396,49 +427,51 @@ export function CashDayClient({ clients: initialClients, initialData, date }) {
               ) : null}
             </div>
 
-            <div className="mt-5 max-h-80 overflow-y-auto rounded-lg border border-zinc-200">
-              <button
-                className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left text-sm transition hover:bg-zinc-50 ${
-                  !selectedClientId ? "bg-emerald-50 text-emerald-800" : "text-zinc-700"
-                }`}
-                onClick={() => selectClient("")}
-                type="button"
-              >
-                <span>Nenhum cliente</span>
-                {!selectedClientId ? <UserCheck size={18} /> : null}
-              </button>
-
-              {filteredClients.map((client) => (
+            {!clientFormOpen ? (
+              <div className="mt-5 max-h-80 overflow-y-auto rounded-lg border border-zinc-200">
                 <button
-                  className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left transition last:border-0 hover:bg-zinc-50 ${
-                    String(client.id) === String(selectedClientId)
-                      ? "bg-emerald-50 text-emerald-800"
-                      : "text-zinc-700"
+                  className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left text-sm transition hover:bg-zinc-50 ${
+                    !selectedClientId ? "bg-emerald-50 text-emerald-800" : "text-zinc-700"
                   }`}
-                  key={client.id}
-                  onClick={() => selectClient(String(client.id))}
+                  onClick={() => selectClient("")}
                   type="button"
                 >
-                  <span>
-                    <span className="block text-sm font-semibold">{client.name}</span>
-                    <span className="mt-0.5 block text-xs text-zinc-500">
-                      {[client.phone, client.email, client.vehicle_plate]
-                        .filter(Boolean)
-                        .join(" - ") || "Sem contato"}
-                    </span>
-                  </span>
-                  {String(client.id) === String(selectedClientId) ? (
-                    <UserCheck size={18} />
-                  ) : null}
+                  <span>Nenhum cliente</span>
+                  {!selectedClientId ? <UserCheck size={18} /> : null}
                 </button>
-              ))}
 
-              {!filteredClients.length ? (
-                <div className="px-4 py-8 text-center text-sm text-zinc-500">
-                  Nenhum cliente encontrado.
-                </div>
-              ) : null}
-            </div>
+                {filteredClients.map((client) => (
+                  <button
+                    className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left transition last:border-0 hover:bg-zinc-50 ${
+                      String(client.id) === String(selectedClientId)
+                        ? "bg-emerald-50 text-emerald-800"
+                        : "text-zinc-700"
+                    }`}
+                    key={client.id}
+                    onClick={() => selectClient(String(client.id))}
+                    type="button"
+                  >
+                    <span>
+                      <span className="block text-sm font-semibold">{client.name}</span>
+                      <span className="mt-0.5 block text-xs text-zinc-500">
+                        {[client.phone, client.email, client.vehicle_plate]
+                          .filter(Boolean)
+                          .join(" - ") || "Sem contato"}
+                      </span>
+                    </span>
+                    {String(client.id) === String(selectedClientId) ? (
+                      <UserCheck size={18} />
+                    ) : null}
+                  </button>
+                ))}
+
+                {!filteredClients.length ? (
+                  <div className="px-4 py-8 text-center text-sm text-zinc-500">
+                    Nenhum cliente encontrado.
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
