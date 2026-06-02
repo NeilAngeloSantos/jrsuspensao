@@ -11,7 +11,7 @@ export async function PATCH(request, { params }) {
 
   if (!["paid", "pending"].includes(paymentStatus)) {
     return NextResponse.json(
-      { error: "Status de pagamento invalido." },
+      { error: "Status de pagamento inválido." },
       { status: 400 }
     );
   }
@@ -20,7 +20,7 @@ export async function PATCH(request, { params }) {
 
   if (!result) {
     return NextResponse.json(
-      { error: "Movimentacao nao encontrada." },
+      { error: "Movimentação não encontrada." },
       { status: 404 }
     );
   }

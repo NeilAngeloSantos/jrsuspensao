@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const errorMessages = {
-  google_not_configured: "Login com Google ainda nao foi configurado.",
-  google_state: "Sessao do Google expirada. Tente entrar novamente.",
-  google_token: "Nao foi possivel validar o acesso com Google.",
-  google_profile: "Nao foi possivel carregar o perfil do Google.",
-  google_denied: "Este e-mail do Google nao esta autorizado.",
+  google_not_configured: "Login com Google ainda não foi configurado.",
+  google_state: "Sessão do Google expirada. Tente entrar novamente.",
+  google_token: "Não foi possível validar o acesso com Google.",
+  google_profile: "Não foi possível carregar o perfil do Google.",
+  google_denied: "Este e-mail do Google não está autorizado.",
 };
 
 export function LoginForm({ nextPath = "/", error }) {
@@ -32,7 +32,7 @@ export function LoginForm({ nextPath = "/", error }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel entrar.");
+      setMessage(payload.error || "Não foi possível entrar.");
       return;
     }
 

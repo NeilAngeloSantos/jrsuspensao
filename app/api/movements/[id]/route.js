@@ -10,7 +10,7 @@ export async function DELETE(_request, { params }) {
 
   if (!result) {
     return NextResponse.json(
-      { error: "Movimentacao nao encontrada." },
+      { error: "Movimentação não encontrada." },
       { status: 404 }
     );
   }
@@ -29,23 +29,23 @@ export async function PATCH(request, { params }) {
   const description = String(body.description || "").trim();
 
   if (!["in", "out"].includes(mode)) {
-    return NextResponse.json({ error: "Modo invalido." }, { status: 400 });
+    return NextResponse.json({ error: "Modo inválido." }, { status: 400 });
   }
 
   if (!["dinheiro", "credito", "pix"].includes(paymentType)) {
-    return NextResponse.json({ error: "Tipo de pagamento invalido." }, { status: 400 });
+    return NextResponse.json({ error: "Tipo de pagamento inválido." }, { status: 400 });
   }
 
   if (!["paid", "pending"].includes(paymentStatus)) {
     return NextResponse.json(
-      { error: "Status de pagamento invalido." },
+      { error: "Status de pagamento inválido." },
       { status: 400 }
     );
   }
 
   if (!description || amountCents <= 0) {
     return NextResponse.json(
-      { error: "Descricao e valor sao obrigatorios." },
+      { error: "Descrição e valor são obrigatórios." },
       { status: 400 }
     );
   }
@@ -62,7 +62,7 @@ export async function PATCH(request, { params }) {
 
   if (!result) {
     return NextResponse.json(
-      { error: "Movimentacao nao encontrada." },
+      { error: "Movimentação não encontrada." },
       { status: 404 }
     );
   }

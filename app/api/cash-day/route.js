@@ -18,7 +18,7 @@ export async function PATCH(request) {
 
   if (openingCents < 0) {
     return NextResponse.json(
-      { error: "O saldo inicial nao pode ser negativo." },
+      { error: "O saldo inicial não pode ser negativo." },
       { status: 400 }
     );
   }

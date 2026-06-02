@@ -9,6 +9,9 @@ import {
   parseCurrencyToCents,
   paymentLabels,
 } from "@/lib/format";
+import { HiddenValue } from "@/components/value-visibility";
+
+const emptyClient = { name: "", phone: "", email: "", vehiclePlate: "" };
 
 const emptyMovement = {
   mode: "in",
@@ -24,14 +27,19 @@ const timeFormatter = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 });
 
-export function CashDayClient({ clients, initialData, date }) {
+export function CashDayClient({ clients: initialClients, initialData, date }) {
   const [data, setData] = useState(initialData);
+  const [clients, setClients] = useState(initialClients);
   const [opening, setOpening] = useState(formatCurrency(initialData.day.opening_cents));
   const [movement, setMovement] = useState(emptyMovement);
+  const [newClient, setNewClient] = useState(emptyClient);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
+  const [clientMessage, setClientMessage] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [openingModalOpen, setOpeningModalOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [clientModalContext, setClientModalContext] = useState("movement");
   const [clientSearch, setClientSearch] = useState("");
   const [editingMovement, setEditingMovement] = useState(null);
 
@@ -52,6 +60,27 @@ export function CashDayClient({ clients, initialData, date }) {
     );
   }, [clientSearch, clients]);
   const hasSelectedClient = Boolean(movement.clientId);
+  const selectedClientId =
+    clientModalContext === "edit" ? editingMovement?.clientId || "" : movement.clientId;
+  const selectedEditClient = clients.find(
+    (client) => String(client.id) === String(editingMovement?.clientId)
+  );
+
+  function openClientModal(context = "movement") {
+    setClientModalContext(context);
+    setClientModalOpen(true);
+  }
+
+  function selectClient(clientId) {
+    if (clientModalContext === "edit") {
+      setEditingMovement((current) => (current ? { ...current, clientId } : current));
+    } else {
+      setMovement((current) => ({ ...current, clientId }));
+    }
+
+    setClientModalOpen(false);
+    setClientSearch("");
+  }
 
   async function saveOpening(event) {
     event.preventDefault();
@@ -68,7 +97,7 @@ export function CashDayClient({ clients, initialData, date }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel salvar o saldo inicial.");
+      setMessage(payload.error || "Não foi possível salvar o saldo inicial.");
       return;
     }
 
@@ -83,7 +112,7 @@ export function CashDayClient({ clients, initialData, date }) {
 
     const amountCents = parseCurrencyToCents(movement.amount);
     if (!movement.description.trim() || amountCents <= 0) {
-      setMessage("Preencha descricao e valor para registrar a movimentacao.");
+      setMessage("Preencha descrição e valor para registrar a movimentação.");
       return;
     }
 
@@ -106,7 +135,7 @@ export function CashDayClient({ clients, initialData, date }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel registrar a movimentacao.");
+      setMessage(payload.error || "Não foi possível registrar a movimentação.");
       return;
     }
 
@@ -121,11 +150,48 @@ export function CashDayClient({ clients, initialData, date }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel remover a movimentacao.");
+      setMessage(payload.error || "Não foi possível remover a movimentação.");
       return;
     }
 
     setData(payload);
+  }
+
+  async function saveClientFromModal(event) {
+    event.preventDefault();
+    setClientMessage("");
+
+    if (!newClient.name.trim()) {
+      setClientMessage("Informe o nome do cliente.");
+      return;
+    }
+
+    setSaving(true);
+    const response = await fetch("/api/clients", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newClient),
+    });
+    const payload = await response.json();
+    setSaving(false);
+
+    if (!response.ok) {
+      setClientMessage(payload.error || "Nao foi possivel salvar o cliente.");
+      return;
+    }
+
+    const updatedClients = payload.clients || [];
+    const createdClient = updatedClients.reduce(
+      (latest, item) => (!latest || Number(item.id) > Number(latest.id) ? item : latest),
+      null
+    );
+
+    setClients(updatedClients);
+    if (createdClient) {
+      selectClient(String(createdClient.id));
+    }
+    setNewClient(emptyClient);
+    setClientFormOpen(false);
   }
 
   function openEditMovement(item) {
@@ -146,7 +212,7 @@ export function CashDayClient({ clients, initialData, date }) {
 
     const amountCents = parseCurrencyToCents(editingMovement.amount);
     if (!editingMovement.description.trim() || amountCents <= 0) {
-      setMessage("Preencha descricao e valor para atualizar a movimentacao.");
+      setMessage("Preencha descrição e valor para atualizar a movimentação.");
       return;
     }
 
@@ -167,7 +233,7 @@ export function CashDayClient({ clients, initialData, date }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel atualizar a movimentacao.");
+      setMessage(payload.error || "Não foi possível atualizar a movimentação.");
       return;
     }
 
@@ -181,13 +247,13 @@ export function CashDayClient({ clients, initialData, date }) {
         <div
           aria-labelledby="client-modal-title"
           aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/45 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[60] grid place-items-center bg-zinc-950/45 p-4 backdrop-blur-md"
           role="dialog"
         >
           <div className="w-full max-w-2xl rounded-lg border border-zinc-200 bg-white p-6 shadow-2xl shadow-zinc-950/20">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <p className="text-sm font-semibold text-emerald-700">Vinculo opcional</p>
+                <p className="text-sm font-semibold text-emerald-700">Vínculo opcional</p>
                 <h2
                   className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950"
                   id="client-modal-title"
@@ -216,38 +282,141 @@ export function CashDayClient({ clients, initialData, date }) {
               />
             </div>
 
+            <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50/60 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-zinc-950">Criar cliente agora</p>
+                  <p className="mt-0.5 text-xs text-zinc-600">
+                    Cadastre e vincule ao lancamento em seguida.
+                  </p>
+                </div>
+                <button
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                  onClick={() => {
+                    setClientFormOpen((current) => !current);
+                    setClientMessage("");
+                  }}
+                  type="button"
+                >
+                  <UserPlus size={16} />
+                  <span>{clientFormOpen ? "Ocultar" : "Novo cliente"}</span>
+                </button>
+              </div>
+
+              {clientFormOpen ? (
+                <form className="mt-4 grid gap-3" onSubmit={saveClientFromModal}>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-600" htmlFor="modal-client-name">
+                        Nome
+                      </label>
+                      <input
+                        className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        id="modal-client-name"
+                        onChange={(event) =>
+                          setNewClient((current) => ({ ...current, name: event.target.value }))
+                        }
+                        placeholder="Nome do cliente"
+                        value={newClient.name}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-600" htmlFor="modal-client-phone">
+                        Telefone
+                      </label>
+                      <input
+                        className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        id="modal-client-phone"
+                        onChange={(event) =>
+                          setNewClient((current) => ({ ...current, phone: event.target.value }))
+                        }
+                        placeholder="Telefone"
+                        value={newClient.phone}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-600" htmlFor="modal-client-email">
+                        E-mail
+                      </label>
+                      <input
+                        className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        id="modal-client-email"
+                        onChange={(event) =>
+                          setNewClient((current) => ({ ...current, email: event.target.value }))
+                        }
+                        placeholder="email@exemplo.com"
+                        type="email"
+                        value={newClient.email}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-600" htmlFor="modal-client-plate">
+                        Placa
+                      </label>
+                      <input
+                        className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 uppercase outline-none transition placeholder:normal-case placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        id="modal-client-plate"
+                        onChange={(event) =>
+                          setNewClient((current) => ({
+                            ...current,
+                            vehiclePlate: event.target.value.toUpperCase(),
+                          }))
+                        }
+                        placeholder="ABC1D23"
+                        value={newClient.vehiclePlate}
+                      />
+                    </div>
+                  </div>
+
+                  {clientMessage ? (
+                    <p className="text-sm font-medium text-red-600">{clientMessage}</p>
+                  ) : null}
+
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button
+                      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                      onClick={() => {
+                        setClientFormOpen(false);
+                        setClientMessage("");
+                        setNewClient(emptyClient);
+                      }}
+                      type="button"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={saving}
+                      type="submit"
+                    >
+                      Salvar e vincular
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+            </div>
+
             <div className="mt-5 max-h-80 overflow-y-auto rounded-lg border border-zinc-200">
               <button
                 className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left text-sm transition hover:bg-zinc-50 ${
-                  !movement.clientId ? "bg-emerald-50 text-emerald-800" : "text-zinc-700"
+                  !selectedClientId ? "bg-emerald-50 text-emerald-800" : "text-zinc-700"
                 }`}
-                onClick={() => {
-                  setMovement((current) => ({ ...current, clientId: "" }));
-                  setClientModalOpen(false);
-                  setClientSearch("");
-                }}
+                onClick={() => selectClient("")}
                 type="button"
               >
                 <span>Nenhum cliente</span>
-                {!movement.clientId ? <UserCheck size={18} /> : null}
+                {!selectedClientId ? <UserCheck size={18} /> : null}
               </button>
 
               {filteredClients.map((client) => (
                 <button
                   className={`flex w-full items-center justify-between border-b border-zinc-100 px-4 py-3 text-left transition last:border-0 hover:bg-zinc-50 ${
-                    String(client.id) === String(movement.clientId)
+                    String(client.id) === String(selectedClientId)
                       ? "bg-emerald-50 text-emerald-800"
                       : "text-zinc-700"
                   }`}
                   key={client.id}
-                  onClick={() => {
-                    setMovement((current) => ({
-                      ...current,
-                      clientId: String(client.id),
-                    }));
-                    setClientModalOpen(false);
-                    setClientSearch("");
-                  }}
+                  onClick={() => selectClient(String(client.id))}
                   type="button"
                 >
                   <span>
@@ -258,7 +427,7 @@ export function CashDayClient({ clients, initialData, date }) {
                         .join(" - ") || "Sem contato"}
                     </span>
                   </span>
-                  {String(client.id) === String(movement.clientId) ? (
+                  {String(client.id) === String(selectedClientId) ? (
                     <UserCheck size={18} />
                   ) : null}
                 </button>
@@ -287,12 +456,12 @@ export function CashDayClient({ clients, initialData, date }) {
           >
             <div className="flex items-start justify-between gap-6">
               <div>
-                <p className="text-sm font-semibold text-emerald-700">Ajuste de lancamento</p>
+                <p className="text-sm font-semibold text-emerald-700">Ajuste de lançamento</p>
                 <h2
                   className="mt-1 text-2xl font-semibold tracking-tight text-zinc-950"
                   id="edit-movement-title"
                 >
-                  Editar movimentacao
+                  Editar movimentação
                 </h2>
               </div>
               <button
@@ -322,7 +491,7 @@ export function CashDayClient({ clients, initialData, date }) {
                   value={editingMovement.mode}
                 >
                   <option value="in">Entrada</option>
-                  <option value="out">Saida</option>
+                  <option value="out">Saída</option>
                 </select>
               </div>
               <div className="grid gap-2 md:col-span-9">
@@ -330,7 +499,7 @@ export function CashDayClient({ clients, initialData, date }) {
                   className="text-sm font-medium text-zinc-600"
                   htmlFor="edit-description"
                 >
-                  Descricao
+                  Descrição
                 </label>
                 <input
                   className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
@@ -348,24 +517,25 @@ export function CashDayClient({ clients, initialData, date }) {
                 <label className="text-sm font-medium text-zinc-600" htmlFor="edit-client">
                   Cliente
                 </label>
-                <select
-                  className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                <button
+                  className={`inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition focus:outline-none focus:ring-4 focus:ring-emerald-100 ${
+                    editingMovement.clientId
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                  }`}
                   id="edit-client"
-                  onChange={(event) =>
-                    setEditingMovement((current) => ({
-                      ...current,
-                      clientId: event.target.value,
-                    }))
-                  }
-                  value={editingMovement.clientId}
+                  onClick={() => openClientModal("edit")}
+                  type="button"
                 >
-                  <option value="">Sem cliente</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {[client.name, client.vehicle_plate].filter(Boolean).join(" - ")}
-                    </option>
-                  ))}
-                </select>
+                  {editingMovement.clientId ? <UserCheck size={18} /> : <UserPlus size={18} />}
+                  <span>
+                    {selectedEditClient
+                      ? [selectedEditClient.name, selectedEditClient.vehicle_plate]
+                          .filter(Boolean)
+                          .join(" - ")
+                      : "Selecionar cliente"}
+                  </span>
+                </button>
               </div>
               <div className="grid gap-2 md:col-span-2">
                 <label className="text-sm font-medium text-zinc-600" htmlFor="edit-amount">
@@ -400,7 +570,7 @@ export function CashDayClient({ clients, initialData, date }) {
                   value={editingMovement.paymentType}
                 >
                   <option value="dinheiro">Dinheiro</option>
-                  <option value="credito">Credito</option>
+                  <option value="credito">Crédito</option>
                   <option value="pix">Pix</option>
                 </select>
               </div>
@@ -438,7 +608,7 @@ export function CashDayClient({ clients, initialData, date }) {
                 disabled={saving}
                 type="submit"
               >
-                Salvar alteracoes
+                Salvar alterações
               </button>
             </div>
           </form>
@@ -453,7 +623,7 @@ export function CashDayClient({ clients, initialData, date }) {
         >
           <span className="font-medium text-zinc-500">Saldo inicial</span>
           <strong className="font-semibold text-zinc-950">
-            {formatCurrency(summary.openingCents)}
+            <HiddenValue>{formatCurrency(summary.openingCents)}</HiddenValue>
           </strong>
         </button>
       </div>
@@ -489,7 +659,7 @@ export function CashDayClient({ clients, initialData, date }) {
               </button>
             </div>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Informe o valor em dinheiro disponivel ao iniciar a operacao.
+              Informe o valor em dinheiro disponível ao iniciar a operação.
             </p>
             <div className="mt-5 grid gap-2">
               <label className="text-sm font-medium text-zinc-600" htmlFor="opening">
@@ -533,13 +703,13 @@ export function CashDayClient({ clients, initialData, date }) {
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-emerald-700">Lancamento</p>
+              <p className="text-sm font-semibold text-emerald-700">Lançamento</p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight text-zinc-950">
-                Movimentacao
+                Movimentação
               </h2>
             </div>
             <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-500">
-              Entrada e saida
+              Entrada e saída
             </span>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-12 min-[1180px]:grid-cols-[92px_minmax(280px,1fr)_106px_112px_108px_120px] md:items-end">
@@ -556,12 +726,12 @@ export function CashDayClient({ clients, initialData, date }) {
                 value={movement.mode}
               >
                 <option value="in">Entrada</option>
-                <option value="out">Saida</option>
+                <option value="out">Saída</option>
               </select>
             </div>
             <div className="grid gap-2 md:col-span-6 min-[1180px]:col-span-1">
               <label className="text-sm font-medium text-zinc-600" htmlFor="description">
-                Descricao
+                Descrição
               </label>
               <input
                 className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
@@ -586,7 +756,7 @@ export function CashDayClient({ clients, initialData, date }) {
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                     : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
                 }`}
-                onClick={() => setClientModalOpen(true)}
+                onClick={() => openClientModal("movement")}
                 title={hasSelectedClient ? "Cliente vinculado" : "Vincular cliente"}
                 type="button"
               >
@@ -628,7 +798,7 @@ export function CashDayClient({ clients, initialData, date }) {
                 value={movement.paymentType}
               >
                 <option value="dinheiro">Dinheiro</option>
-                <option value="credito">Credito</option>
+                <option value="credito">Crédito</option>
                 <option value="pix">Pix</option>
               </select>
             </div>
@@ -674,7 +844,7 @@ export function CashDayClient({ clients, initialData, date }) {
               <tr className="text-left text-xs font-semibold text-zinc-500">
                 <th className="px-5 py-4">Tipo</th>
                 <th className="px-5 py-4">Hora</th>
-                <th className="px-5 py-4">Descricao</th>
+                <th className="px-5 py-4">Descrição</th>
                 <th className="px-5 py-4">Cliente</th>
                 <th className="px-5 py-4">Pagamento</th>
                 <th className="px-5 py-4">Modo</th>
@@ -719,8 +889,10 @@ export function CashDayClient({ clients, initialData, date }) {
                           : "text-rose-700"
                     }`}
                   >
-                    {item.mode === "out" ? "- " : ""}
-                    {formatCurrency(item.amount_cents)}
+                    <HiddenValue>
+                      {item.mode === "out" ? "- " : ""}
+                      {formatCurrency(item.amount_cents)}
+                    </HiddenValue>
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex justify-end gap-2">
@@ -749,7 +921,7 @@ export function CashDayClient({ clients, initialData, date }) {
           </table>
           {!orderedMovements.length ? (
             <div className="border-t border-zinc-100 px-6 py-10 text-center text-sm text-zinc-500">
-              Nenhuma movimentacao registrada neste dia.
+              Nenhuma movimentação registrada neste dia.
             </div>
           ) : null}
         </div>
@@ -757,14 +929,14 @@ export function CashDayClient({ clients, initialData, date }) {
 
       <aside className="grid min-w-0 gap-4 min-[1500px]:content-start">
         <section className="rounded-lg border border-zinc-200/80 bg-white/85 p-4 shadow-xl shadow-zinc-900/[0.04] backdrop-blur">
-          <p className="text-xs font-semibold text-zinc-500">Operacoes</p>
+          <p className="text-xs font-semibold text-zinc-500">Operações</p>
           <h2 className="mt-1 text-lg font-semibold tracking-tight text-zinc-950">
             Resumo
           </h2>
           <div className="mt-3 grid gap-1">
             <SummaryLine
               compact
-              label="Cartao de credito"
+              label="Cartão de crédito"
               value={`${summary.byPaymentType.credito.count} ops`}
             />
             <SummaryLine
@@ -780,13 +952,29 @@ export function CashDayClient({ clients, initialData, date }) {
           <p className="text-sm font-semibold text-sky-700">Financeiro</p>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">Totais do dia</h2>
           <p className="mt-2 text-xs leading-5 text-sky-700/80">
-            Somente lancamentos pagos entram nesses totais.
+            Somente lançamentos pagos entram nesses totais.
           </p>
           <div className="mt-5 grid gap-2">
-            <SummaryLine blue label="Entradas" value={formatCurrency(summary.incomingCents)} />
-            <SummaryLine blue label="Saidas" value={formatCurrency(summary.outgoingCents)} />
-            <SummaryLine blue label="Resultado" value={formatCurrency(summary.balanceCents)} />
-            <SummaryLine blue label="Total em caixa" value={formatCurrency(summary.cashCents)} />
+            <SummaryLine
+              blue
+              label="Entradas"
+              value={<HiddenValue>{formatCurrency(summary.incomingCents)}</HiddenValue>}
+            />
+            <SummaryLine
+              blue
+              label="Saídas"
+              value={<HiddenValue>{formatCurrency(summary.outgoingCents)}</HiddenValue>}
+            />
+            <SummaryLine
+              blue
+              label="Resultado"
+              value={<HiddenValue>{formatCurrency(summary.balanceCents)}</HiddenValue>}
+            />
+            <SummaryLine
+              blue
+              label="Total em caixa"
+              value={<HiddenValue>{formatCurrency(summary.cashCents)}</HiddenValue>}
+            />
           </div>
         </section>
       </aside>

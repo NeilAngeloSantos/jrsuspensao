@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatCurrency, modeLabels, paymentLabels } from "@/lib/format";
+import { HiddenValue } from "@/components/value-visibility";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -32,7 +33,7 @@ export function PendingPaymentsClient({ initialPending }) {
     setSavingId(null);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel marcar como pago.");
+      setMessage(payload.error || "Não foi possível marcar como pago.");
       return;
     }
 
@@ -43,7 +44,10 @@ export function PendingPaymentsClient({ initialPending }) {
     <section className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-3">
         <Metric label="Itens pendentes" value={String(pending.length)} />
-        <Metric label="Valor aguardando" value={formatCurrency(totalCents)} />
+        <Metric
+          label="Valor aguardando"
+          value={<HiddenValue>{formatCurrency(totalCents)}</HiddenValue>}
+        />
         <Metric
           label="Mais antigo"
           value={pending.length ? waitingTimeLabel(pending[0].occurred_at) : "-"}
@@ -62,7 +66,7 @@ export function PendingPaymentsClient({ initialPending }) {
             <tr className="text-left text-xs font-semibold text-zinc-500">
               <th className="px-5 py-4">Data</th>
               <th className="px-5 py-4">Cliente</th>
-              <th className="px-5 py-4">Descricao</th>
+              <th className="px-5 py-4">Descrição</th>
               <th className="px-5 py-4">Tipo</th>
               <th className="px-5 py-4">Modo</th>
               <th className="px-5 py-4">Esperando</th>
@@ -99,8 +103,10 @@ export function PendingPaymentsClient({ initialPending }) {
                     item.mode === "in" ? "text-emerald-700" : "text-rose-700"
                   }`}
                 >
-                  {item.mode === "out" ? "- " : ""}
-                  {formatCurrency(item.amount_cents)}
+                  <HiddenValue>
+                    {item.mode === "out" ? "- " : ""}
+                    {formatCurrency(item.amount_cents)}
+                  </HiddenValue>
                 </td>
                 <td className="px-5 py-4 text-right">
                   <button
@@ -121,7 +127,7 @@ export function PendingPaymentsClient({ initialPending }) {
           <div className="border-t border-zinc-100 px-6 py-12 text-center">
             <p className="text-sm font-medium text-zinc-700">Nada pendente por aqui.</p>
             <p className="mt-1 text-sm text-zinc-500">
-              Quando um lancamento for marcado como pendente, ele aparece nesta tela.
+              Quando um lançamento for marcado como pendente, ele aparece nesta tela.
             </p>
           </div>
         ) : null}

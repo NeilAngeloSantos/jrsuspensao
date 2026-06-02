@@ -13,7 +13,7 @@ export async function POST(request) {
   const name = String(body.name || "").trim();
 
   if (!name) {
-    return NextResponse.json({ error: "Nome do cliente e obrigatorio." }, { status: 400 });
+    return NextResponse.json({ error: "Nome do cliente é obrigatório." }, { status: 400 });
   }
 
   return NextResponse.json({

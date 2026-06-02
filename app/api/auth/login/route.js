@@ -13,13 +13,13 @@ export async function POST(request) {
 
   if (!expectedEmail || !expectedPassword) {
     return NextResponse.json(
-      { error: "Login por e-mail e senha nao configurado no servidor." },
+      { error: "Login por e-mail e senha não configurado no servidor." },
       { status: 503 }
     );
   }
 
   if (email !== expectedEmail || password !== expectedPassword) {
-    return NextResponse.json({ error: "E-mail ou senha invalidos." }, { status: 401 });
+    return NextResponse.json({ error: "E-mail ou senha inválidos." }, { status: 401 });
   }
 
   const response = NextResponse.json({ ok: true });

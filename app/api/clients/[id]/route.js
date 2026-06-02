@@ -15,7 +15,7 @@ export async function PATCH(request, { params }) {
   const name = String(body.name || "").trim();
 
   if (!name) {
-    return NextResponse.json({ error: "Nome do cliente e obrigatorio." }, { status: 400 });
+    return NextResponse.json({ error: "Nome do cliente é obrigatório." }, { status: 400 });
   }
 
   const clients = await updateClient({
@@ -27,7 +27,7 @@ export async function PATCH(request, { params }) {
   });
 
   if (!clients) {
-    return NextResponse.json({ error: "Cliente nao encontrado." }, { status: 404 });
+    return NextResponse.json({ error: "Cliente não encontrado." }, { status: 404 });
   }
 
   return NextResponse.json({ clients });

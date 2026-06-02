@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 
 export const metadata = {
   title: "Admin Financeiro",
-  description: "Gestao de fluxo de caixa e clientes",
+  description: "Gestão de fluxo de caixa e clientes",
 };
 
 export default function RootLayout({ children }) {

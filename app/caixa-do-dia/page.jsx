@@ -1,5 +1,6 @@
 import { CashDayClient } from "@/components/cash-day-client";
 import { CashDateSelector } from "@/components/cash-date-selector";
+import { ValueVisibilityButton } from "@/components/value-visibility";
 import { getCashDay, listClients } from "@/lib/db";
 import { isoDate } from "@/lib/format";
 
@@ -33,7 +34,7 @@ export default async function CashDayPage({ searchParams }) {
 
   return (
     <div className="space-y-6">
-      <header className="max-w-4xl">
+      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-sm font-semibold text-emerald-700">Caixa do dia</p>
           <CashDateSelector
@@ -41,10 +42,8 @@ export default async function CashDayPage({ searchParams }) {
             displayDate={displayDate}
             maxDate={today}
           />
-          <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-600">
-            Registre entradas, saidas e acompanhe o total em caixa de hoje.
-          </p>
         </div>
+        <ValueVisibilityButton />
       </header>
 
       <CashDayClient

@@ -60,7 +60,7 @@ export function ClientManager({ initialClients }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel salvar o cliente.");
+      setMessage(payload.error || "Não foi possível salvar o cliente.");
       return;
     }
 
@@ -104,7 +104,7 @@ export function ClientManager({ initialClients }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel atualizar o cliente.");
+      setMessage(payload.error || "Não foi possível atualizar o cliente.");
       return;
     }
 
@@ -120,7 +120,7 @@ export function ClientManager({ initialClients }) {
     setSaving(false);
 
     if (!response.ok) {
-      setMessage(payload.error || "Nao foi possivel remover o cliente.");
+      setMessage(payload.error || "Não foi possível remover o cliente.");
       return;
     }
 
@@ -246,7 +246,7 @@ export function ClientManager({ initialClients }) {
               disabled={saving}
               type="submit"
             >
-              {saving ? "Salvando..." : "Salvar alteracoes"}
+              {saving ? "Salvando..." : "Salvar alterações"}
             </button>
           </div>
         </form>

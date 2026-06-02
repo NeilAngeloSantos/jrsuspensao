@@ -9,7 +9,7 @@ export function DashboardYearSelector({ years, selectedYear }) {
   const [open, setOpen] = useState(false);
 
   function selectYear(year) {
-    router.push(`/?year=${encodeURIComponent(year)}`);
+    router.push(`/dashboard?year=${encodeURIComponent(year)}`);
     setOpen(false);
   }
 

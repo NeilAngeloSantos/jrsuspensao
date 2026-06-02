@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Dashboard", icon: BarChart3 },
   { href: "/caixa-do-dia", label: "Caixa do dia", icon: Wallet },
+  { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/pendentes", label: "Pendentes", icon: Clock3 },
   { href: "/clientes", label: "Clientes", icon: Users },
 ];
@@ -47,8 +47,7 @@ export function Sidebar() {
       >
         {links.map((link) => {
           const Icon = link.icon;
-          const active =
-            link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+          const active = pathname.startsWith(link.href);
 
           return (
             <Link
@@ -67,18 +66,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-5 hidden rounded-lg border border-white/10 bg-white/[0.04] p-4 lg:block">
-        <div className="flex items-center gap-2 text-xs font-medium text-emerald-300">
-          <CalendarDays size={14} />
-          Operacao ativa
-        </div>
-        <p className="mt-3 text-sm leading-6 text-zinc-400">
-          Caixa, clientes e indicadores em uma base simples para evoluir o admin.
-        </p>
-      </div>
+
 
       <button
-        className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-zinc-400 transition hover:bg-white/8 hover:text-white lg:justify-start"
+        className="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-zinc-400 transition hover:bg-white/8 hover:text-white lg:justify-start"
         onClick={logout}
         type="button"
       >

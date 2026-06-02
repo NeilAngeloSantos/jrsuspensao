@@ -6,13 +6,14 @@ import {
   getDashboardMonthDays,
 } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
+import { HiddenValue, ValueVisibilityButton } from "@/components/value-visibility";
 
 export const dynamic = "force-dynamic";
 
 const monthNames = [
   "Janeiro",
   "Fevereiro",
-  "Marco",
+  "Março",
   "Abril",
   "Maio",
   "Junho",
@@ -56,7 +57,7 @@ export default async function MonthlyDashboardPage({ searchParams }) {
         <div>
           <Link
             className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-900"
-            href={`/?year=${year}`}
+            href={`/dashboard?year=${year}`}
           >
             <ArrowLeft size={16} />
             Voltar ao dashboard
@@ -68,47 +69,54 @@ export default async function MonthlyDashboardPage({ searchParams }) {
             {monthNames[Number(month) - 1]} de {year}
           </h1>
         </div>
-        <Link
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          href={`/?year=${year}`}
-        >
-          Ver ano completo
-        </Link>
+        <div className="flex flex-col gap-3 md:items-end">
+          <ValueVisibilityButton />
+          <Link
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            href={`/dashboard?year=${year}`}
+          >
+            Ver ano completo
+          </Link>
+        </div>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Metric
           tone="emerald"
-          label="Entradas no mes"
-          value={formatCurrency(monthSummary.incomingCents)}
+          label="Entradas no mês"
+          value={<HiddenValue>{formatCurrency(monthSummary.incomingCents)}</HiddenValue>}
         />
         <Metric
           tone="rose"
-          label="Saidas no mes"
-          value={formatCurrency(monthSummary.outgoingCents)}
+          label="Saídas no mês"
+          value={<HiddenValue>{formatCurrency(monthSummary.outgoingCents)}</HiddenValue>}
         />
         <Metric
           tone={monthSummary.balanceCents < 0 ? "rose" : "cyan"}
           label="Resultado"
-          value={formatCurrency(monthSummary.balanceCents)}
+          value={<HiddenValue>{formatCurrency(monthSummary.balanceCents)}</HiddenValue>}
         />
         <Metric
           label="Dias com movimento"
           value={String(activeDays)}
-          detail={`${monthSummary.movements} movimentacoes pagas`}
+          detail={`${monthSummary.movements} movimentações pagas`}
         />
         <Metric
           tone="amber"
           label="Pendentes"
           value={String(pending.count)}
-          detail={`${formatCurrency(pending.cents)} aguardando`}
+          detail={
+            <>
+              <HiddenValue>{formatCurrency(pending.cents)}</HiddenValue> aguardando
+            </>
+          }
         />
       </section>
 
       <section className="rounded-lg border border-zinc-200/80 bg-white/85 p-6 shadow-xl shadow-zinc-900/[0.04] backdrop-blur">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-zinc-500">Dias do mes</p>
+            <p className="text-sm font-semibold text-zinc-500">Dias do mês</p>
             <h2 className="mt-1 text-xl font-semibold text-zinc-950">
               Performance diaria
             </h2>
@@ -156,7 +164,7 @@ export default async function MonthlyDashboardPage({ searchParams }) {
                     <p className="text-xs text-zinc-500">
                       {day.pendingMovements
                         ? `${day.pendingMovements} pendentes`
-                        : "Sem pendencias"}
+                        : "Sem pendências"}
                     </p>
                   </div>
                   <Link
@@ -172,7 +180,7 @@ export default async function MonthlyDashboardPage({ searchParams }) {
           </div>
         ) : (
           <p className="mt-6 rounded-lg border border-dashed border-zinc-200 p-6 text-sm text-zinc-500">
-            Nenhum dia com caixa registrado para este mes.
+            Nenhum dia com caixa registrado para este mês.
           </p>
         )}
       </section>
@@ -198,7 +206,7 @@ function Metric({ label, value, detail, tone = "zinc" }) {
         {value}
       </div>
       <p className="mt-2 text-sm text-zinc-500">
-        {detail || "Atualizado pelo caixa diario"}
+        {detail || "Atualizado pelo caixa diário"}
       </p>
     </article>
   );
@@ -215,7 +223,7 @@ function BarAmount({ value, max, tone }) {
   return (
     <div>
       <p className={`text-sm font-semibold ${colors[tone].split(" ")[1]}`}>
-        {formatCurrency(value)}
+        <HiddenValue>{formatCurrency(value)}</HiddenValue>
       </p>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100">
         <div className={`h-full rounded-full ${colors[tone].split(" ")[0]}`} style={{ width }} />

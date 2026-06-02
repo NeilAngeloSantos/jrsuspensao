@@ -1,4 +1,5 @@
 import { PendingPaymentsClient } from "@/components/pending-payments-client";
+import { HiddenValue, ValueVisibilityButton } from "@/components/value-visibility";
 import { listPendingMovements } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 
@@ -23,11 +24,14 @@ export default async function PendingPaymentsPage() {
             Acompanhe itens aguardando pagamento e quite quando o dinheiro entrar ou sair.
           </p>
         </div>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
-          <p className="text-sm font-semibold">Total pendente</p>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">
-            {formatCurrency(totalCents)}
-          </p>
+        <div className="flex flex-col gap-3 md:items-end">
+          <ValueVisibilityButton />
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
+            <p className="text-sm font-semibold">Total pendente</p>
+            <p className="mt-1 text-2xl font-semibold tracking-tight">
+              <HiddenValue>{formatCurrency(totalCents)}</HiddenValue>
+            </p>
+          </div>
         </div>
       </header>
 

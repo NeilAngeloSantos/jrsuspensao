@@ -15,7 +15,7 @@ export default async function ClientsPage() {
             Clientes
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-600">
-            Cadastre contatos para a area administrativa crescer junto com o caixa.
+            Cadastre contatos para a área administrativa crescer junto com o caixa.
           </p>
         </div>
       </header>
